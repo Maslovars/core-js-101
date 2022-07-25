@@ -137,7 +137,7 @@ function doRectanglesOverlap(rect1, rect2) {
 
 
 /**
- * Returns true, if point lies inside the circle, otherwise false.
+ * Returns true, if turn lies inside the circle, otherwise false.
  * Circle is an object of
  *  {
  *     center: {
@@ -147,14 +147,14 @@ function doRectanglesOverlap(rect1, rect2) {
  *     radius: 20
  *  }
  *
- * Point is object of
+ * turn is object of
  *  {
  *     x: 5,
  *     y: 5
  *  }
  *
  * @param {object} circle
- * @param {object} point
+ * @param {object} turn
  * @return {bool}
  *
  * @example:
@@ -162,8 +162,8 @@ function doRectanglesOverlap(rect1, rect2) {
  *   { center: { x:0, y:0 }, radius:10 },  { x:10, y:10 }   => false
  *
  */
-function isInsideCircle(circle, point) {
-  return (point.x - circle.center.x) ** 2 + (point.y - circle.center.y) ** 2 < circle.radius ** 2;
+function isInsideCircle(circle, turn) {
+  return (turn.x - circle.center.x) ** 2 + (turn.y - circle.center.y) ** 2 < circle.radius ** 2;
 }
 
 
@@ -188,7 +188,7 @@ function findFirstSingleChar(str) {
 
 /**
  * Returns the string representation of math interval,
- * specified by two points and include / exclude flags.
+ * specified by two turns and include / exclude flags.
  * See the details: https://en.wikipedia.org/wiki/Interval_(mathematics)
  *
  * Please take attention, that the smaller number should be the first in the notation
@@ -208,8 +208,8 @@ function findFirstSingleChar(str) {
  *   5, 3, true, true   => '[3, 5]'
  *
  */
-function getIntervalString(/* a, b, isStartIncluded, isEndIncluded */) {
-  throw new Error('Not implemented');
+function getIntervalString(a, b, isStartIncluded, isEndIncluded) {
+  return `${isStartIncluded ? '[' : '('}${a < b ? a : b}, ${a < b ? b : a}${isEndIncluded ? ']' : ')'}`;
 }
 
 
@@ -267,8 +267,19 @@ function reverseInteger(num) {
  *   5436468789016589 => false
  *   4916123456789012 => false
  */
-function isCreditCardNumber(/* ccn */) {
-  throw new Error('Not implemented');
+function isCreditCardNumber(ccn) {
+  const num = ccn.toString();
+  let sum = 0;
+  for (let i = 0; i < num.length; i += 1) {
+    let n = +num[i];
+    if ((num.length - i) % 2 === 0) {
+      n *= 2;
+      if (n > 9) n -= 9;
+    }
+    sum += n;
+  }
+
+  return sum % 10 === 0;
 }
 
 /**
@@ -285,8 +296,12 @@ function isCreditCardNumber(/* ccn */) {
  *   10000 ( 1+0+0+0+0 = 1 ) => 1
  *   165536 (1+6+5+5+3+6 = 26,  2+6 = 8) => 8
  */
-function getDigitalRoot(/* num */) {
-  throw new Error('Not implemented');
+function getDigitalRoot(num) {
+  const sum = num.toString().split('').reduce((res, el) => res + +el, 0);
+  if (sum <= 9) {
+    return sum;
+  }
+  return getDigitalRoot(sum);
 }
 
 
@@ -311,8 +326,13 @@ function getDigitalRoot(/* num */) {
  *   '{)' = false
  *   '{[(<{[]}>)]}' = true
  */
-function isBracketsBalanced(/* str */) {
-  throw new Error('Not implemented');
+function isBracketsBalanced(str) {
+  const brackets = /\[\]|\(\)|\{\}|<>/g;
+  let res = str;
+  for (let i = 0; i < str.length; i += 1) {
+    res = res.replace(brackets, '');
+  }
+  return res.length === 0;
 }
 
 
@@ -353,8 +373,12 @@ function toNaryString(num, n) {
  *   ['/web/assets/style.css', '/.bin/mocha',  '/read.me'] => '/'
  *   ['/web/favicon.ico', '/web-scripts/dump', '/verbalizer/logs'] => '/'
  */
-function getCommonDirectoryPath(/* pathes */) {
-  throw new Error('Not implemented');
+function getCommonDirectoryPath(pathes) {
+  const res = pathes.reduce((sum, cur) => cur.split('/').filter((el) => sum.includes(el)), pathes[0].split('/'));
+  if (!res.length) {
+    return res.join('');
+  }
+  return `${res.join('/')}/`;
 }
 
 
@@ -376,8 +400,19 @@ function getCommonDirectoryPath(/* pathes */) {
  *                         [ 6 ]]
  *
  */
-function getMatrixProduct(/* m1, m2 */) {
-  throw new Error('Not implemented');
+function getMatrixProduct(m1, m2) {
+  const res = [];
+  for (let i = 0; i < m1.length; i += 1) {
+    res[i] = [];
+    for (let j = 0; j < m2[0].length; j += 1) {
+      let sum = 0;
+      for (let n = 0; n < m1[0].length; n += 1) {
+        sum += m1[i][n] * m2[n][j];
+      }
+      res[i][j] = sum;
+    }
+  }
+  return res;
 }
 
 
@@ -411,8 +446,30 @@ function getMatrixProduct(/* m1, m2 */) {
  *    [    ,   ,    ]]
  *
  */
-function evaluateTicTacToePosition(/* position */) {
-  throw new Error('Not implemented');
+function evaluateTicTacToePosition(position) {
+  const gameField = [
+    [[0, 0], [0, 1], [0, 2]],
+    [[1, 0], [1, 1], [1, 2]],
+    [[2, 0], [2, 1], [2, 2]],
+    [[0, 0], [1, 0], [2, 0]],
+    [[0, 1], [1, 1], [2, 1]],
+    [[0, 2], [1, 2], [2, 2]],
+    [[0, 0], [1, 1], [2, 2]],
+    [[0, 2], [1, 1], [2, 0]],
+  ];
+  let res;
+
+  gameField.forEach((player) => {
+    let x = 0;
+    let o = 0;
+    player.forEach((turn) => {
+      if (position[turn[0]][turn[1]] === 'X') x += 1;
+      if (position[turn[0]][turn[1]] === '0') o += 1;
+    });
+    if (x === 3) res = 'X';
+    if (o === 3) res = '0';
+  });
+  return res;
 }
 
 
